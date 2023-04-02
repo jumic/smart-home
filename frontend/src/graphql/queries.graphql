@@ -1,0 +1,8 @@
+# this is an auto generated file. This will be overwritten
+query GetSensors {
+  getSensors {
+    id
+    name
+    ieeeAddr
+  }
+}

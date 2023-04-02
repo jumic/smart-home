@@ -22,6 +22,414 @@ exports[`Snapshot 1`] = `
     },
   },
   "Resources": {
+    "ApiApiLogsRole90293F72": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "appsync.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiF70053CD": {
+      "Properties": {
+        "AuthenticationType": "AMAZON_COGNITO_USER_POOLS",
+        "LogConfig": {
+          "CloudWatchLogsRoleArn": {
+            "Fn::GetAtt": [
+              "ApiApiLogsRole90293F72",
+              "Arn",
+            ],
+          },
+          "FieldLogLevel": "ALL",
+        },
+        "Name": "Smart Home API",
+        "UserPoolConfig": {
+          "AwsRegion": {
+            "Ref": "AWS::Region",
+          },
+          "DefaultAction": "DENY",
+          "UserPoolId": {
+            "Ref": "UserPool6BA7E5F2",
+          },
+        },
+        "XrayEnabled": true,
+      },
+      "Type": "AWS::AppSync::GraphQLApi",
+    },
+    "ApiLogRetention94272E33": {
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Join": [
+            "",
+            [
+              "/aws/appsync/apis/",
+              {
+                "Fn::GetAtt": [
+                  "ApiF70053CD",
+                  "ApiId",
+                ],
+              },
+            ],
+          ],
+        },
+        "RetentionInDays": 7,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::LogRetention",
+    },
+    "ApiMutationAddSensorResolverE468E82F": {
+      "DependsOn": [
+        "ApiSchema510EECD7",
+        "ApisensorDataSource2A53A5CE",
+      ],
+      "Properties": {
+        "ApiId": {
+          "Fn::GetAtt": [
+            "ApiF70053CD",
+            "ApiId",
+          ],
+        },
+        "DataSourceName": "sensorDataSource",
+        "FieldName": "addSensor",
+        "Kind": "UNIT",
+        "RequestMappingTemplate": "
+      #set($input = $ctx.args.input)
+      
+      {
+        "version": "2017-02-28",
+        "operation": "PutItem",
+        "key" : {
+      "id" : $util.dynamodb.toDynamoDBJson($util.autoId())
+    },
+        "attributeValues": $util.dynamodb.toMapValuesJson($input)
+      }",
+        "ResponseMappingTemplate": "$util.toJson($ctx.result)",
+        "TypeName": "Mutation",
+      },
+      "Type": "AWS::AppSync::Resolver",
+    },
+    "ApiMutationDeleteSensorResolver9F337C98": {
+      "DependsOn": [
+        "ApiSchema510EECD7",
+        "ApisensorDataSource2A53A5CE",
+      ],
+      "Properties": {
+        "ApiId": {
+          "Fn::GetAtt": [
+            "ApiF70053CD",
+            "ApiId",
+          ],
+        },
+        "DataSourceName": "sensorDataSource",
+        "FieldName": "deleteSensor",
+        "Kind": "UNIT",
+        "RequestMappingTemplate": "{"version": "2017-02-28", "operation": "DeleteItem", "key": {"id": $util.dynamodb.toDynamoDBJson($ctx.args.id)}}",
+        "ResponseMappingTemplate": "$util.toJson($ctx.result)",
+        "TypeName": "Mutation",
+      },
+      "Type": "AWS::AppSync::Resolver",
+    },
+    "ApiMutationUpdateSensorResolver2038916D": {
+      "DependsOn": [
+        "ApiSchema510EECD7",
+        "ApisensorDataSource2A53A5CE",
+      ],
+      "Properties": {
+        "ApiId": {
+          "Fn::GetAtt": [
+            "ApiF70053CD",
+            "ApiId",
+          ],
+        },
+        "DataSourceName": "sensorDataSource",
+        "FieldName": "updateSensor",
+        "Kind": "UNIT",
+        "RequestMappingTemplate": "
+      #set($input = $ctx.args.input)
+      
+      {
+        "version": "2017-02-28",
+        "operation": "PutItem",
+        "key" : {
+      "id" : $util.dynamodb.toDynamoDBJson($ctx.args.id)
+    },
+        "attributeValues": $util.dynamodb.toMapValuesJson($input)
+      }",
+        "ResponseMappingTemplate": "$util.toJson($ctx.result)",
+        "TypeName": "Mutation",
+      },
+      "Type": "AWS::AppSync::Resolver",
+    },
+    "ApiQueryGetSensorsResolver5D735B1C": {
+      "DependsOn": [
+        "ApiSchema510EECD7",
+        "ApisensorDataSource2A53A5CE",
+      ],
+      "Properties": {
+        "ApiId": {
+          "Fn::GetAtt": [
+            "ApiF70053CD",
+            "ApiId",
+          ],
+        },
+        "DataSourceName": "sensorDataSource",
+        "FieldName": "getSensors",
+        "Kind": "UNIT",
+        "RequestMappingTemplate": "{"version" : "2017-02-28", "operation" : "Scan", "consistentRead": false}",
+        "ResponseMappingTemplate": "$util.toJson($ctx.result.items)",
+        "TypeName": "Query",
+      },
+      "Type": "AWS::AppSync::Resolver",
+    },
+    "ApiSchema510EECD7": {
+      "Properties": {
+        "ApiId": {
+          "Fn::GetAtt": [
+            "ApiF70053CD",
+            "ApiId",
+          ],
+        },
+        "Definition": "type Sensor {
+  id: String!
+  name: String!
+  ieeeAddr: String!
+}
+input SensorInput {
+  name: String!
+  ieeeAddr: String!
+}
+type Query {
+  getSensors: [ Sensor! ]
+  @aws_auth(cognito_groups: ["Admin"])
+}
+type Mutation {
+  addSensor(input: SensorInput!): Sensor
+  @aws_auth(cognito_groups: ["Admin"])
+  updateSensor(id: String!, input: SensorInput!): Sensor
+  @aws_auth(cognito_groups: ["Admin"])
+  deleteSensor(id: String!): Sensor
+  @aws_auth(cognito_groups: ["Admin"])
+}",
+      },
+      "Type": "AWS::AppSync::GraphQLSchema",
+    },
+    "ApisensorDataSource2A53A5CE": {
+      "Properties": {
+        "ApiId": {
+          "Fn::GetAtt": [
+            "ApiF70053CD",
+            "ApiId",
+          ],
+        },
+        "DynamoDBConfig": {
+          "AwsRegion": {
+            "Ref": "AWS::Region",
+          },
+          "TableName": {
+            "Ref": "SensorTable9068DC9C",
+          },
+        },
+        "Name": "sensorDataSource",
+        "ServiceRoleArn": {
+          "Fn::GetAtt": [
+            "ApisensorDataSourceServiceRoleFF784AFE",
+            "Arn",
+          ],
+        },
+        "Type": "AMAZON_DYNAMODB",
+      },
+      "Type": "AWS::AppSync::DataSource",
+    },
+    "ApisensorDataSourceServiceRoleDefaultPolicy04DBB606": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "dynamodb:BatchGetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:Query",
+                "dynamodb:GetItem",
+                "dynamodb:Scan",
+                "dynamodb:ConditionCheckItem",
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "SensorTable9068DC9C",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ApisensorDataSourceServiceRoleDefaultPolicy04DBB606",
+        "Roles": [
+          {
+            "Ref": "ApisensorDataSourceServiceRoleFF784AFE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ApisensorDataSourceServiceRoleFF784AFE": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "appsync.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A": {
+      "DependsOn": [
+        "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+        "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "5fa1330271b8967d9254ba2d4a07144f8acefe8b77e6d6bba38261373a50d5f8.zip",
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs14.x",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:PutRetentionPolicy",
+                "logs:DeleteRetentionPolicy",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+        "Roles": [
+          {
+            "Ref": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SensorTable9068DC9C": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S",
+          },
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH",
+          },
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5,
+        },
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Delete",
+    },
     "UserJulianAdmin": {
       "DependsOn": [
         "UserPoolGroupAdmin",

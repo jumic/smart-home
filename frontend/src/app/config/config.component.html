@@ -1,0 +1,63 @@
+<h1>Config</h1>
+
+
+<p><button class="btn btn-outline-primary" (click)="openNew(content)"><i class="bi bi-plus-circle"></i></button></p>
+
+
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">IEEE address</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let sensor of sensors; index as i">
+        <td>{{ sensor.name }}</td>
+        <td>{{ sensor.ieeeAddr }}</td>
+        <td>
+            <button class="btn btn-outline-primary" (click)="open(content, sensor)"><i class="bi bi-pencil-square"></i></button>
+            <button class="btn btn-outline-primary" (click)="delete(sensor)"><i class="bi bi-x-square"></i></button>
+        </td>
+      </tr>
+    </tbody>
+</table>
+
+
+<ng-template #content let-modal>
+    <form>
+	<div class="modal-header">
+		<h4 class="modal-title" id="modal-basic-title">{{ dialogTitle }}</h4>
+		<button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+	</div>
+	<div class="modal-body">
+			<div class="mb-3">
+				<label for="name">Name</label>
+				<div class="input-group">
+					<input
+                        [(ngModel)]="sensor.name"
+						id="name"
+						class="form-control"
+                        name="name"
+					/>
+				</div>
+			</div>
+            <div class="mb-3">
+				<label for="ieeeAddr">IEEE address</label>
+				<div class="input-group">
+					<input
+                    [(ngModel)]="sensor.ieeeAddr"
+						id="ieeeAddr"
+						class="form-control"
+						name="ieeeAddr"
+                        
+					/>
+				</div>
+			</div>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-outline-dark" (click)="modal.close('Save click')">Save</button>
+	</div>
+</form>
+</ng-template>

@@ -1,6 +1,10 @@
+import * as path from "path";
 import { App, CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
-import * as cognito from "aws-cdk-lib/aws-cognito";
 
+import * as appsync from "aws-cdk-lib/aws-appsync";
+import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 
 export class MyStack extends Stack {
@@ -78,6 +82,74 @@ export class MyStack extends Stack {
       });
     userAdminGroupAssignment.addDependency(userPoolUser);
     userAdminGroupAssignment.addDependency(groupAdmin);
+
+    const api = new appsync.GraphqlApi(this, "Api", {
+      name: "Smart Home API",
+      schema: appsync.SchemaFile.fromAsset(
+        path.join(__dirname, "../schema.graphql")
+      ),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: appsync.AuthorizationType.USER_POOL,
+          userPoolConfig: {
+            userPool,
+            defaultAction: appsync.UserPoolDefaultAction.DENY,
+          },
+        },
+      },
+      xrayEnabled: true,
+      logConfig: {
+        retention: RetentionDays.ONE_WEEK,
+        fieldLogLevel: appsync.FieldLogLevel.ALL,
+      },
+    });
+
+    const sensorTable = new dynamodb.Table(this, "SensorTable", {
+      partitionKey: {
+        name: "id",
+        type: dynamodb.AttributeType.STRING,
+      },
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+
+    const sensorDS = api.addDynamoDbDataSource("sensorDataSource", sensorTable);
+
+    sensorDS.createResolver("QueryGetSensorsResolver", {
+      typeName: "Query",
+      fieldName: "getSensors",
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbScanTable(),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultList(),
+    });
+
+    sensorDS.createResolver("MutationAddSensorResolver", {
+      typeName: "Mutation",
+      fieldName: "addSensor",
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbPutItem(
+        appsync.PrimaryKey.partition("id").auto(),
+        appsync.Values.projecting("input")
+      ),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem(),
+    });
+
+    sensorDS.createResolver("MutationUpdateSensorResolver", {
+      typeName: "Mutation",
+      fieldName: "updateSensor",
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbPutItem(
+        appsync.PrimaryKey.partition("id").is("id"),
+        appsync.Values.projecting("input")
+      ),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem(),
+    });
+
+    sensorDS.createResolver("MutationDeleteSensorResolver", {
+      typeName: "Mutation",
+      fieldName: "deleteSensor",
+      requestMappingTemplate: appsync.MappingTemplate.dynamoDbDeleteItem(
+        "id",
+        "id"
+      ),
+      responseMappingTemplate: appsync.MappingTemplate.dynamoDbResultItem(),
+    });
   }
 }
 

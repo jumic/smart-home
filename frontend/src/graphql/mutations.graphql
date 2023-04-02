@@ -1,0 +1,22 @@
+# this is an auto generated file. This will be overwritten
+mutation AddSensor($input: SensorInput!) {
+  addSensor(input: $input) {
+    id
+    name
+    ieeeAddr
+  }
+}
+mutation UpdateSensor($id: String!, $input: SensorInput!) {
+  updateSensor(id: $id, input: $input) {
+    id
+    name
+    ieeeAddr
+  }
+}
+mutation DeleteSensor($id: String!) {
+  deleteSensor(id: $id) {
+    id
+    name
+    ieeeAddr
+  }
+}

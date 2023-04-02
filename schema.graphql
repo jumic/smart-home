@@ -1,0 +1,21 @@
+type Sensor {
+  id: String!
+  name: String!
+  ieeeAddr: String!
+}
+input SensorInput {
+  name: String!
+  ieeeAddr: String!
+}
+type Query {
+  getSensors: [ Sensor! ]
+  @aws_auth(cognito_groups: ["Admin"])
+}
+type Mutation {
+  addSensor(input: SensorInput!): Sensor
+  @aws_auth(cognito_groups: ["Admin"])
+  updateSensor(id: String!, input: SensorInput!): Sensor
+  @aws_auth(cognito_groups: ["Admin"])
+  deleteSensor(id: String!): Sensor
+  @aws_auth(cognito_groups: ["Admin"])
+}
