@@ -1,0 +1,8 @@
+{
+  "frontendUrl": "http://localhost:4200",
+  "region": "eu-central-1",
+  "userPoolId": "eu-central-1_BPwYJkOeG",
+  "userPoolWebClientId": "28red3pjukv7v2plluqlb05f62",
+  "cognitoDomain":"smart-home-dev.auth.eu-central-1.amazoncognito.com",
+  "appsyncEndpoint": "https://qplcn7a7tvgp5juyhliw7zh5dy.appsync-api.eu-central-1.amazonaws.com/graphql"
+}

@@ -2,9 +2,14 @@ import * as path from "path";
 import { App, CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 
 import * as appsync from "aws-cdk-lib/aws-appsync";
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import { OriginAccessIdentity } from "aws-cdk-lib/aws-cloudfront";
+import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
+import * as s3 from "aws-cdk-lib/aws-s3";
+import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
 
 export class MyStack extends Stack {
@@ -16,10 +21,32 @@ export class MyStack extends Stack {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    userPool.addDomain("UserPoolDomain", {
+    const userPoolDomain = userPool.addDomain("UserPoolDomain", {
       cognitoDomain: {
         domainPrefix: "smart-home-dev",
       },
+    });
+
+    const bucket = new s3.Bucket(this, "Destination", {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const oai = new OriginAccessIdentity(this, "OriginAccessIdentity");
+    bucket.grantRead(oai);
+
+    // Handles buckets whether or not they are configured for website hosting.
+    const distribution = new cloudfront.Distribution(this, "Distribution", {
+      defaultRootObject: "index.html",
+      defaultBehavior: {
+        origin: new origins.S3Origin(bucket, {
+          originAccessIdentity: oai,
+        }),
+      },
+    });
+    new CfnOutput(this, "DistributionDomainName", {
+      value: `https://${distribution.distributionDomainName}`,
     });
 
     const userPoolClient = userPool.addClient("UserPoolClientFrontend", {
@@ -38,8 +65,14 @@ export class MyStack extends Stack {
           cognito.OAuthScope.PROFILE,
           cognito.OAuthScope.COGNITO_ADMIN,
         ],
-        callbackUrls: ["http://localhost:4200"],
-        logoutUrls: ["http://localhost:4200"],
+        callbackUrls: [
+          "http://localhost:4200",
+          `https://${distribution.distributionDomainName}`,
+        ],
+        logoutUrls: [
+          "http://localhost:4200",
+          `https://${distribution.distributionDomainName}`,
+        ],
       },
     });
 
@@ -48,6 +81,45 @@ export class MyStack extends Stack {
     });
     new CfnOutput(this, "UserPoolWebClientId", {
       value: userPoolClient.userPoolClientId,
+    });
+
+    const api = new appsync.GraphqlApi(this, "Api", {
+      name: "Smart Home API",
+      schema: appsync.SchemaFile.fromAsset(
+        path.join(__dirname, "../schema.graphql")
+      ),
+      authorizationConfig: {
+        defaultAuthorization: {
+          authorizationType: appsync.AuthorizationType.USER_POOL,
+          userPoolConfig: {
+            userPool,
+            defaultAction: appsync.UserPoolDefaultAction.DENY,
+          },
+        },
+      },
+      xrayEnabled: true,
+      logConfig: {
+        retention: RetentionDays.ONE_WEEK,
+        fieldLogLevel: appsync.FieldLogLevel.ALL,
+      },
+    });
+
+    new s3deploy.BucketDeployment(this, "DeployWithInvalidation", {
+      sources: [
+        s3deploy.Source.asset("./frontend/dist/smart-home-frontend"),
+        s3deploy.Source.jsonData("frontend-config.json", {
+          frontendUrl: `https://${distribution.distributionDomainName}`,
+          region: Stack.of(this).region,
+          userPoolId: userPool.userPoolId,
+          userPoolWebClientId: userPoolClient.userPoolClientId,
+          cognitoDomain: `${userPoolDomain.domainName}.auth.${
+            Stack.of(this).region
+          }.amazoncognito.com`,
+          appsyncEndpoint: api.graphqlUrl,
+        }),
+      ],
+      destinationBucket: bucket,
+      distribution,
     });
 
     const userPoolUser = new cognito.CfnUserPoolUser(this, "UserPoolUser", {
@@ -82,27 +154,6 @@ export class MyStack extends Stack {
       });
     userAdminGroupAssignment.addDependency(userPoolUser);
     userAdminGroupAssignment.addDependency(groupAdmin);
-
-    const api = new appsync.GraphqlApi(this, "Api", {
-      name: "Smart Home API",
-      schema: appsync.SchemaFile.fromAsset(
-        path.join(__dirname, "../schema.graphql")
-      ),
-      authorizationConfig: {
-        defaultAuthorization: {
-          authorizationType: appsync.AuthorizationType.USER_POOL,
-          userPoolConfig: {
-            userPool,
-            defaultAction: appsync.UserPoolDefaultAction.DENY,
-          },
-        },
-      },
-      xrayEnabled: true,
-      logConfig: {
-        retention: RetentionDays.ONE_WEEK,
-        fieldLogLevel: appsync.FieldLogLevel.ALL,
-      },
-    });
 
     const sensorTable = new dynamodb.Table(this, "SensorTable", {
       partitionKey: {

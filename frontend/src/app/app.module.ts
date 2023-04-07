@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -9,37 +9,50 @@ import { Amplify } from 'aws-amplify';
 import { SensorsComponent } from './sensors/sensors.component';
 import { ConfigComponent } from './config/config.component';
 import { FormsModule } from '@angular/forms';
+import { FrontendConfigService } from './frontend-config.service';
+import { HttpClientModule } from '@angular/common/http';
 
-Amplify.configure({
-  Auth: {
-    region: 'eu-central-1',
-    userPoolId: 'eu-central-1_BPwYJkOeG',
-    userPoolWebClientId: '28red3pjukv7v2plluqlb05f62',
-    cookieStorage: {
-      path: '/',
-      expires: 30,
-      domain: window.location.hostname,
-      secure: true,
-    },
-    oauth: {
-      domain: 'smart-home-dev.auth.eu-central-1.amazoncognito.com',
-      scope: [
-        'phone',
-        'email',
-        'profile',
-        'openid',
-        'aws.cognito.signin.user.admin',
-      ],
-      redirectSignIn: 'http://localhost:4200',
-      redirectSignOut: 'http://localhost:4200',
-      responseType: 'code',
-    },
-  },
-  // https://docs.amplify.aws/lib/graphqlapi/existing-resources/q/platform/react-native/#using-with-an-appsync-custom-domain-name
-  aws_appsync_graphqlEndpoint: 'https://qplcn7a7tvgp5juyhliw7zh5dy.appsync-api.eu-central-1.amazonaws.com/graphql',
-  aws_appsync_region: 'eu-central-1',
-  aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS',
-});
+const appInitializerFn =  (configService: FrontendConfigService) => {
+  return () => {
+    const loadedAppConfig = configService.loadAppConfig()
+    loadedAppConfig.then(() => {
+      const config = configService.getConfig();
+      if (config) {
+        Amplify.configure({
+          Auth: {
+            region: config.region,
+            userPoolId: config.userPoolId,
+            userPoolWebClientId: config.userPoolWebClientId,
+            cookieStorage: {
+              path: '/',
+              expires: 30,
+              domain: window.location.hostname,
+              secure: true,
+            },
+            oauth: {
+              domain: config.cognitoDomain,
+              scope: [
+                'phone',
+                'email',
+                'profile',
+                'openid',
+                'aws.cognito.signin.user.admin',
+              ],
+              redirectSignIn: config.frontendUrl,
+              redirectSignOut: config.frontendUrl,
+              responseType: 'code',
+            },
+          },
+          // https://docs.amplify.aws/lib/graphqlapi/existing-resources/q/platform/react-native/#using-with-an-appsync-custom-domain-name
+          aws_appsync_graphqlEndpoint: config.appsyncEndpoint,
+          aws_appsync_region: config.region,
+          aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS',
+        });
+      }
+    });
+    return loadedAppConfig;
+  };
+};
 
 @NgModule({
   declarations: [
@@ -52,8 +65,16 @@ Amplify.configure({
     AppRoutingModule,
     NgbModule,
     FormsModule,
+    HttpClientModule,
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  providers: [
+    FrontendConfigService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: appInitializerFn,
+      multi: true,
+      deps: [FrontendConfigService]
+    }
+  ],  bootstrap: [AppComponent]
 })
 export class AppModule { }
