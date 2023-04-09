@@ -1,4 +1,4 @@
-type Sensor {
+type Sensor @aws_cognito_user_pools @aws_iam {
   id: String!
   name: String!
   ieeeAddr: String!
@@ -7,9 +7,23 @@ input SensorInput {
   name: String!
   ieeeAddr: String!
 }
+input ValueInput {
+  temperatureValue: String!
+}
+type Value @aws_cognito_user_pools @aws_iam {
+  id: String!
+  timestamp: String!
+  temperatureValue: String!
+}
 type Query {
   getSensors: [ Sensor! ]
-  @aws_auth(cognito_groups: ["Admin"])
+  @aws_iam @aws_cognito_user_pools(cognito_groups: ["Admin"])
+  getSensorByIeeeAddr(ieeeAddr: String!): Sensor!
+  @aws_iam
+  getSensorById(id: String!): Sensor!
+  @aws_cognito_user_pools(cognito_groups: ["Admin"])
+  getValues(id: String!): [ Value! ]
+  @aws_cognito_user_pools(cognito_groups: ["Admin"])
 }
 type Mutation {
   addSensor(input: SensorInput!): Sensor
@@ -18,4 +32,12 @@ type Mutation {
   @aws_auth(cognito_groups: ["Admin"])
   deleteSensor(id: String!): Sensor
   @aws_auth(cognito_groups: ["Admin"])
+  addValue(id: String!, timestamp: String!, input: ValueInput!): Value
+  @aws_iam
+}
+type Subscription {
+  addedSensor: Sensor
+  @aws_subscribe(mutations: ["addSensor"]) @aws_cognito_user_pools(cognito_groups: ["Admin"])
+  addedValue(id: String!): Value
+  @aws_subscribe(mutations: ["addValue"]) @aws_cognito_user_pools(cognito_groups: ["Admin"])
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
-import { APIService, GetSensorsQuery } from '../API.service';
+import { AddedSensorSubscription, APIService, GetSensorsQuery } from '../API.service';
 import { ModalDismissReasons, NgbDatepickerModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Observable } from "zen-observable-ts";
 
 @Component({
   selector: 'app-config',

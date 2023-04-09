@@ -16,6 +16,7 @@
     ".projen/tasks.json",
     "cdk.json",
     "LICENSE",
+    "src/lambdas/send-sensor-values-function.ts",
     "tsconfig.dev.json",
     "tsconfig.json"
   ],

@@ -6,3 +6,24 @@ query GetSensors {
     ieeeAddr
   }
 }
+query GetSensorByIeeeAddr($ieeeAddr: String!) {
+  getSensorByIeeeAddr(ieeeAddr: $ieeeAddr) {
+    id
+    name
+    ieeeAddr
+  }
+}
+query GetSensorById($id: String!) {
+  getSensorById(id: $id) {
+    id
+    name
+    ieeeAddr
+  }
+}
+query GetValues($id: String!) {
+  getValues(id: $id) {
+    id
+    timestamp
+    temperatureValue
+  }
+}

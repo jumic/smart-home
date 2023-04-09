@@ -11,6 +11,7 @@ import { ConfigComponent } from './config/config.component';
 import { FormsModule } from '@angular/forms';
 import { FrontendConfigService } from './frontend-config.service';
 import { HttpClientModule } from '@angular/common/http';
+import { SensorValuesComponent } from './sensor-values/sensor-values.component';
 
 const appInitializerFn =  (configService: FrontendConfigService) => {
   return () => {
@@ -58,7 +59,8 @@ const appInitializerFn =  (configService: FrontendConfigService) => {
   declarations: [
     AppComponent,
     SensorsComponent,
-    ConfigComponent
+    ConfigComponent,
+    SensorValuesComponent
   ],
   imports: [
     BrowserModule,

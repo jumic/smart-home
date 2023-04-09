@@ -56,7 +56,8 @@
       {
         "devDependencies": [
           "**/test/**",
-          "**/build-tools/**"
+          "**/build-tools/**",
+          "src/lambdas/send-sensor-values.lambda.ts"
         ],
         "optionalDependencies": false,
         "peerDependencies": true

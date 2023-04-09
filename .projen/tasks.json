@@ -26,7 +26,30 @@
     },
     "bundle": {
       "name": "bundle",
-      "description": "Prepare assets"
+      "description": "Prepare assets",
+      "steps": [
+        {
+          "spawn": "bundle:lambdas/send-sensor-values.lambda"
+        }
+      ]
+    },
+    "bundle:lambdas/send-sensor-values.lambda": {
+      "name": "bundle:lambdas/send-sensor-values.lambda",
+      "description": "Create a JavaScript bundle from src/lambdas/send-sensor-values.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/send-sensor-values.lambda.ts --target=\"node16\" --platform=\"node\" --outfile=\"assets/lambdas/send-sensor-values.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:aws-sdk"
+        }
+      ]
+    },
+    "bundle:lambdas/send-sensor-values.lambda:watch": {
+      "name": "bundle:lambdas/send-sensor-values.lambda:watch",
+      "description": "Continuously update the JavaScript bundle from src/lambdas/send-sensor-values.lambda.ts",
+      "steps": [
+        {
+          "exec": "esbuild --bundle src/lambdas/send-sensor-values.lambda.ts --target=\"node16\" --platform=\"node\" --outfile=\"assets/lambdas/send-sensor-values.lambda/index.js\" --tsconfig=\"tsconfig.dev.json\" --external:aws-sdk --watch"
+        }
+      ]
     },
     "clobber": {
       "name": "clobber",

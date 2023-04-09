@@ -3,6 +3,8 @@
   "scripts": {
     "build": "npx projen build",
     "bundle": "npx projen bundle",
+    "bundle:lambdas/send-sensor-values.lambda": "npx projen bundle:lambdas/send-sensor-values.lambda",
+    "bundle:lambdas/send-sensor-values.lambda:watch": "npx projen bundle:lambdas/send-sensor-values.lambda:watch",
     "clobber": "npx projen clobber",
     "compile": "npx projen compile",
     "default": "npx projen default",
@@ -46,8 +48,16 @@
     "typescript": "^5.0.3"
   },
   "dependencies": {
+    "@aws-cdk/aws-iot-actions-alpha": "^2.73.0-alpha.0",
+    "@aws-cdk/aws-iot-alpha": "^2.73.0-alpha.0",
+    "@aws-crypto/sha256-js": "^4.0.0",
+    "@aws-sdk/credential-provider-node": "^3.303.0",
+    "@aws-sdk/protocol-http": "^3.303.0",
+    "@aws-sdk/signature-v4": "^3.303.0",
+    "@types/aws-lambda": "^8.10.114",
     "aws-cdk-lib": "^2.1.0",
-    "constructs": "^10.0.5"
+    "constructs": "^10.0.5",
+    "node-fetch": "^3.3.1"
   },
   "license": "Apache-2.0",
   "version": "0.0.0",

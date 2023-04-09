@@ -1,0 +1,15 @@
+# this is an auto generated file. This will be overwritten
+subscription AddedSensor {
+  addedSensor {
+    id
+    name
+    ieeeAddr
+  }
+}
+subscription AddedValue($id: String!) {
+  addedValue(id: $id) {
+    id
+    timestamp
+    temperatureValue
+  }
+}

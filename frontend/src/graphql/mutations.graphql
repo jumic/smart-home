@@ -20,3 +20,10 @@ mutation DeleteSensor($id: String!) {
     ieeeAddr
   }
 }
+mutation AddValue($id: String!, $timestamp: String!, $input: ValueInput!) {
+  addValue(id: $id, timestamp: $timestamp, input: $input) {
+    id
+    timestamp
+    temperatureValue
+  }
+}

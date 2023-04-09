@@ -5,6 +5,15 @@ import { Injectable } from "@angular/core";
 import API, { graphqlOperation, GraphQLResult } from "@aws-amplify/api-graphql";
 import { Observable } from "zen-observable-ts";
 
+export interface SubscriptionResponse<T> {
+  value: GraphQLResult<T>;
+}
+
+export type __SubscriptionContainer = {
+  addedSensor: AddedSensorSubscription;
+  addedValue: AddedValueSubscription;
+};
+
 export type SensorInput = {
   name: string;
   ieeeAddr: string;
@@ -15,6 +24,17 @@ export type Sensor = {
   id: string;
   name: string;
   ieeeAddr: string;
+};
+
+export type ValueInput = {
+  temperatureValue: string;
+};
+
+export type Value = {
+  __typename: "Value";
+  id: string;
+  timestamp: string;
+  temperatureValue: string;
 };
 
 export type AddSensorMutation = {
@@ -38,11 +58,53 @@ export type DeleteSensorMutation = {
   ieeeAddr: string;
 };
 
+export type AddValueMutation = {
+  __typename: "Value";
+  id: string;
+  timestamp: string;
+  temperatureValue: string;
+};
+
 export type GetSensorsQuery = {
   __typename: "Sensor";
   id: string;
   name: string;
   ieeeAddr: string;
+};
+
+export type GetSensorByIeeeAddrQuery = {
+  __typename: "Sensor";
+  id: string;
+  name: string;
+  ieeeAddr: string;
+};
+
+export type GetSensorByIdQuery = {
+  __typename: "Sensor";
+  id: string;
+  name: string;
+  ieeeAddr: string;
+};
+
+export type GetValuesQuery = {
+  __typename: "Value";
+  id: string;
+  timestamp: string;
+  temperatureValue: string;
+};
+
+export type AddedSensorSubscription = {
+  __typename: "Sensor";
+  id: string;
+  name: string;
+  ieeeAddr: string;
+};
+
+export type AddedValueSubscription = {
+  __typename: "Value";
+  id: string;
+  timestamp: string;
+  temperatureValue: string;
 };
 
 @Injectable({
@@ -104,6 +166,29 @@ export class APIService {
     )) as any;
     return <DeleteSensorMutation>response.data.deleteSensor;
   }
+  async AddValue(
+    id: string,
+    timestamp: string,
+    input: ValueInput
+  ): Promise<AddValueMutation> {
+    const statement = `mutation AddValue($id: String!, $timestamp: String!, $input: ValueInput!) {
+        addValue(id: $id, timestamp: $timestamp, input: $input) {
+          __typename
+          id
+          timestamp
+          temperatureValue
+        }
+      }`;
+    const gqlAPIServiceArguments: any = {
+      id,
+      timestamp,
+      input
+    };
+    const response = (await API.graphql(
+      graphqlOperation(statement, gqlAPIServiceArguments)
+    )) as any;
+    return <AddValueMutation>response.data.addValue;
+  }
   async GetSensors(): Promise<Array<GetSensorsQuery>> {
     const statement = `query GetSensors {
         getSensors {
@@ -115,5 +200,97 @@ export class APIService {
       }`;
     const response = (await API.graphql(graphqlOperation(statement))) as any;
     return <Array<GetSensorsQuery>>response.data.getSensors;
+  }
+  async GetSensorByIeeeAddr(
+    ieeeAddr: string
+  ): Promise<GetSensorByIeeeAddrQuery> {
+    const statement = `query GetSensorByIeeeAddr($ieeeAddr: String!) {
+        getSensorByIeeeAddr(ieeeAddr: $ieeeAddr) {
+          __typename
+          id
+          name
+          ieeeAddr
+        }
+      }`;
+    const gqlAPIServiceArguments: any = {
+      ieeeAddr
+    };
+    const response = (await API.graphql(
+      graphqlOperation(statement, gqlAPIServiceArguments)
+    )) as any;
+    return <GetSensorByIeeeAddrQuery>response.data.getSensorByIeeeAddr;
+  }
+  async GetSensorById(id: string): Promise<GetSensorByIdQuery> {
+    const statement = `query GetSensorById($id: String!) {
+        getSensorById(id: $id) {
+          __typename
+          id
+          name
+          ieeeAddr
+        }
+      }`;
+    const gqlAPIServiceArguments: any = {
+      id
+    };
+    const response = (await API.graphql(
+      graphqlOperation(statement, gqlAPIServiceArguments)
+    )) as any;
+    return <GetSensorByIdQuery>response.data.getSensorById;
+  }
+  async GetValues(id: string): Promise<Array<GetValuesQuery>> {
+    const statement = `query GetValues($id: String!) {
+        getValues(id: $id) {
+          __typename
+          id
+          timestamp
+          temperatureValue
+        }
+      }`;
+    const gqlAPIServiceArguments: any = {
+      id
+    };
+    const response = (await API.graphql(
+      graphqlOperation(statement, gqlAPIServiceArguments)
+    )) as any;
+    return <Array<GetValuesQuery>>response.data.getValues;
+  }
+  AddedSensorListener: Observable<
+    SubscriptionResponse<Pick<__SubscriptionContainer, "addedSensor">>
+  > = API.graphql(
+    graphqlOperation(
+      `subscription AddedSensor {
+        addedSensor {
+          __typename
+          id
+          name
+          ieeeAddr
+        }
+      }`
+    )
+  ) as Observable<
+    SubscriptionResponse<Pick<__SubscriptionContainer, "addedSensor">>
+  >;
+
+  AddedValueListener(
+    id: string
+  ): Observable<
+    SubscriptionResponse<Pick<__SubscriptionContainer, "addedValue">>
+  > {
+    const statement = `subscription AddedValue($id: String!) {
+        addedValue(id: $id) {
+          __typename
+          id
+          timestamp
+          temperatureValue
+        }
+      }`;
+    const gqlAPIServiceArguments: any = {
+      id
+    };
+    return API.graphql(
+      graphqlOperation(statement, gqlAPIServiceArguments)
+    ) as Observable<
+      SubscriptionResponse<Pick<__SubscriptionContainer, "addedValue">>
+    >;
   }
 }
