@@ -21,7 +21,7 @@ export class FrontendConfigService {
 
   loadAppConfig() {
     return firstValueFrom(
-      this.http.get<FrontendConfig>('/frontend-config.json') // '/assets/appConfig.json')
+      this.http.get<FrontendConfig>('/frontend-config.json')
     ).then((data) => {
       this.frontendConfig = data;
     });

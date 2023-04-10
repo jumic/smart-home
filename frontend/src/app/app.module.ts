@@ -44,7 +44,6 @@ const appInitializerFn =  (configService: FrontendConfigService) => {
               responseType: 'code',
             },
           },
-          // https://docs.amplify.aws/lib/graphqlapi/existing-resources/q/platform/react-native/#using-with-an-appsync-custom-domain-name
           aws_appsync_graphqlEndpoint: config.appsyncEndpoint,
           aws_appsync_region: config.region,
           aws_appsync_authenticationType: 'AMAZON_COGNITO_USER_POOLS',

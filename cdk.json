@@ -1,7 +1,7 @@
 {
   "app": "npx ts-node -P tsconfig.json --prefer-ts-exts src/main.ts",
   "output": "cdk.out",
-  "build": "npx projen bundle",
+  "build": "cp schema.graphql frontend && cd frontend && amplify codegen && ng build",
   "watch": {
     "include": [
       "src/**/*.ts",

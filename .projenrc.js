@@ -6,6 +6,9 @@ const project = new awscdk.AwsCdkTypeScriptApp({
 
   prettier: true,
 
+  buildCommand:
+    "cp schema.graphql frontend && cd frontend && amplify codegen && ng build",
+
   deps: [
     "@aws-crypto/sha256-js",
     "@aws-sdk/credential-provider-node",

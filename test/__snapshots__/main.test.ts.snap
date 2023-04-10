@@ -113,7 +113,7 @@ exports[`Snapshot 1`] = `
           ],
         },
         "CodeS3Location": {
-          "Fn::Sub": "s3://cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}/2e94d6f717035bec974a3af10fecb46d4aa5254840192a4243286ce4cdeddfca.js",
+          "Fn::Sub": "s3://cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}/8315800a8e2c0667e8f50bede73f05a4fc1d285ed56411aa9ac587d58c5a8d33.js",
         },
         "DataSourceName": "sensorDataSource",
         "FunctionVersion": "2018-05-29",
@@ -138,7 +138,7 @@ exports[`Snapshot 1`] = `
           ],
         },
         "CodeS3Location": {
-          "Fn::Sub": "s3://cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}/4ff803d5e2e52984b903aa73229f531ac2d47fc61f0ea286cebcd6506ae02a20.js",
+          "Fn::Sub": "s3://cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}/828ee4e407cfaa8be86ed81807ede17bc97b51f8fd0888c374c79afce31ef04e.js",
         },
         "DataSourceName": "sensorDataSource",
         "FunctionVersion": "2018-05-29",
@@ -163,7 +163,7 @@ exports[`Snapshot 1`] = `
           ],
         },
         "CodeS3Location": {
-          "Fn::Sub": "s3://cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}/0918e505f8c0b9b232bcab9f81c718274f12559519decb5f8f1495cc051ecaee.js",
+          "Fn::Sub": "s3://cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}/a7c4abaec09c202f09b58367cebfb272dd19fa20065e40ed8b6c643df3a05a96.js",
         },
         "DataSourceName": "sensorValuesSource",
         "FunctionVersion": "2018-05-29",
@@ -363,7 +363,7 @@ type Value @aws_cognito_user_pools @aws_iam {
 }
 type Query {
   getSensors: [ Sensor! ]
-  @aws_iam @aws_cognito_user_pools(cognito_groups: ["Admin"])
+  @aws_cognito_user_pools(cognito_groups: ["Admin"])
   getSensorByIeeeAddr(ieeeAddr: String!): Sensor!
   @aws_iam
   getSensorById(id: String!): Sensor!
@@ -373,17 +373,15 @@ type Query {
 }
 type Mutation {
   addSensor(input: SensorInput!): Sensor
-  @aws_auth(cognito_groups: ["Admin"])
+  @aws_cognito_user_pools(cognito_groups: ["Admin"])
   updateSensor(id: String!, input: SensorInput!): Sensor
-  @aws_auth(cognito_groups: ["Admin"])
+  @aws_cognito_user_pools(cognito_groups: ["Admin"])
   deleteSensor(id: String!): Sensor
-  @aws_auth(cognito_groups: ["Admin"])
+  @aws_cognito_user_pools(cognito_groups: ["Admin"])
   addValue(id: String!, timestamp: String!, input: ValueInput!): Value
   @aws_iam
 }
 type Subscription {
-  addedSensor: Sensor
-  @aws_subscribe(mutations: ["addSensor"]) @aws_cognito_user_pools(cognito_groups: ["Admin"])
   addedValue(id: String!): Value
   @aws_subscribe(mutations: ["addValue"]) @aws_cognito_user_pools(cognito_groups: ["Admin"])
 }",
@@ -866,7 +864,7 @@ type Subscription {
           },
         ],
         "SourceObjectKeys": [
-          "094683eb41f1654aa28dada3b81f910d2b9f3022c84144a3f3f2fed2917568d1.zip",
+          "eb66ce9453a198e3630985ace4f02210a936d3307db215df36019d5a64303b47.zip",
           "15ae7b98fa9fdd0f2ec13d05d8935c31db2cfcb3d0e59dc38d5629fa470392ea.zip",
         ],
       },

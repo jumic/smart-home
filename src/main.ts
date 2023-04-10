@@ -19,8 +19,12 @@ import * as sqs from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import { SendSensorValuesFunction } from "./lambdas/send-sensor-values-function";
 
+export interface SmartHomeStackProps extends StackProps {
+  cognitoDomainPrefix: string;
+}
+
 export class MyStack extends Stack {
-  constructor(scope: Construct, id: string, props: StackProps = {}) {
+  constructor(scope: Construct, id: string, props: SmartHomeStackProps) {
     super(scope, id, props);
 
     const userPool = new cognito.UserPool(this, "UserPool", {
@@ -30,7 +34,7 @@ export class MyStack extends Stack {
 
     const userPoolDomain = userPool.addDomain("UserPoolDomain", {
       cognitoDomain: {
-        domainPrefix: "smart-home-dev",
+        domainPrefix: props.cognitoDomainPrefix,
       },
     });
 
@@ -348,7 +352,16 @@ const devEnv = {
 
 const app = new App();
 
-new MyStack(app, "smart-home-dev", { env: devEnv });
+new MyStack(app, "smart-home-dev", {
+  env: devEnv,
+  cognitoDomainPrefix: "smart-home-dev",
+});
+
+new MyStack(app, "smart-home-prod", {
+  env: devEnv,
+  cognitoDomainPrefix: "smart-home-prod",
+});
+
 // new MyStack(app, 'smart-home-prod', { env: prodEnv });
 
 app.synth();

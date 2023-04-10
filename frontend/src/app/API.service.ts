@@ -10,7 +10,6 @@ export interface SubscriptionResponse<T> {
 }
 
 export type __SubscriptionContainer = {
-  addedSensor: AddedSensorSubscription;
   addedValue: AddedValueSubscription;
 };
 
@@ -91,13 +90,6 @@ export type GetValuesQuery = {
   id: string;
   timestamp: string;
   temperatureValue: string;
-};
-
-export type AddedSensorSubscription = {
-  __typename: "Sensor";
-  id: string;
-  name: string;
-  ieeeAddr: string;
 };
 
 export type AddedValueSubscription = {
@@ -254,23 +246,6 @@ export class APIService {
     )) as any;
     return <Array<GetValuesQuery>>response.data.getValues;
   }
-  AddedSensorListener: Observable<
-    SubscriptionResponse<Pick<__SubscriptionContainer, "addedSensor">>
-  > = API.graphql(
-    graphqlOperation(
-      `subscription AddedSensor {
-        addedSensor {
-          __typename
-          id
-          name
-          ieeeAddr
-        }
-      }`
-    )
-  ) as Observable<
-    SubscriptionResponse<Pick<__SubscriptionContainer, "addedSensor">>
-  >;
-
   AddedValueListener(
     id: string
   ): Observable<

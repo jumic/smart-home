@@ -1,8 +1,5 @@
 import { util } from '@aws-appsync/utils';
 
-/**
- * Performs a scan on the dynamodb data source
- */
 export function request(ctx) {
     const { ieeeAddr } = ctx.args;
     return { 
@@ -17,9 +14,6 @@ export function request(ctx) {
     };
 }
 
-/**
- * return a list of scanned todo items
- */
 export function response(ctx) {
     console.log("ctx.result: " + JSON.stringify(ctx.result));
     return ctx.result.items[0];
